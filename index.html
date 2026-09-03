@@ -115,20 +115,21 @@
             alert("Gespeichert!");
         }
 
-        async function go(p) {
+       async function go(p) {
             if(!s.k) return {e: "Kein Key!"};
             try {
-                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${s.k}`, {
+                // Wir wechseln von v1beta auf v1 (die stabile Version)
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${s.k}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({contents: [{parts: [{text: `Liste: ${s.i.map(x=>x.name).join(',')}. Aufgabe: ${p}`}]}]})
+                    body: JSON.stringify({contents: [{parts: [{text: `Du bist ein Einkaufs-Assistent. Liste: ${s.i.map(x=>x.name).join(',')}. Aufgabe: ${p}`}]}]})
                 });
                 const d = await r.json();
                 if(!r.ok) return {e: d.error ? d.error.message : "Fehler"};
                 return {t: d.candidates[0].content.parts[0].text};
             } catch (e) { return {e: "Netzwerkfehler!"}; }
         }
-
+        
         async function send() {
             const i = document.getElementById('chat-in');
             const o = document.getElementById('out');
