@@ -2,158 +2,294 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Einkauf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smart Einkauf AI</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
     <style>
-        :root { --primary: #10b981; }
-        body { font-family: sans-serif; background-color: #f8fafc; padding-bottom: 100px; }
-        .card { background: white; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .hidden { display: none; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #10b981; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        :root { --p: #10b981; --p-soft: #ecfdf5; }
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; background: #f4f7f6; color: #1f2937; }
+        .tab-active { color: var(--p); transform: translateY(-2px); transition: all 0.2s; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .item-card { transition: all 0.2s; border: 1px solid rgba(0,0,0,0.05); }
+        .item-card:active { transform: scale(0.98); background: #f9fafb; }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .hidden { display: none !important; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide { animation: slideIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-    <header class="p-8 pb-4 flex justify-between items-center">
-        <h1 class="text-3xl font-black text-slate-800">Smart Einkauf</h1>
-        <div id="status-dot" class="w-3 h-3 rounded-full bg-rose-400"></div>
+    <!-- Header -->
+    <header class="pt-12 pb-6 px-6 glass fixed top-0 w-full z-40 border-b border-gray-100">
+        <div class="flex justify-between items-end">
+            <div>
+                <h1 id="ui-app-name" class="text-3xl font-extrabold tracking-tight">Smart Einkauf</h1>
+                <p id="ui-greeting" class="text-gray-400 text-sm font-medium italic">Dein smarter Begleiter.</p>
+            </div>
+            <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-400 mb-2 shadow-[0_0_8px_rgba(248,113,113,0.6)]"></div>
+        </div>
     </header>
 
-    <main class="px-5">
-        <section id="s-list">
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="in" placeholder="Was fehlt?" class="flex-1 p-4 rounded-2xl border-none shadow-sm outline-none bg-white text-slate-700">
-                <button onclick="add()" class="bg-[#10b981] text-white p-4 rounded-2xl shadow-lg"><i class="fas fa-plus"></i></button>
+    <!-- Main Content -->
+    <main class="pt-32 px-4 pb-32">
+        
+        <!-- SEKTION: EINKAUF -->
+        <div id="sec-list" class="space-y-6">
+            <div class="relative group">
+                <input type="text" id="add-input" placeholder="Artikel hinzufügen..." 
+                    class="w-full p-5 pl-6 bg-white rounded-[22px] shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-lg font-medium">
+                <button onclick="addItem()" class="absolute right-3 top-3 bg-emerald-500 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                    <i data-lucide="plus"></i>
+                </button>
             </div>
-            <div id="list" class="space-y-3"></div>
-            <button onclick="ask('Schlage 2 schnelle Rezepte vor')" class="w-full mt-10 bg-white border-2 border-[#10b981] text-[#10b981] font-bold py-4 rounded-2xl flex items-center justify-center gap-3">
-                <i class="fas fa-magic"></i> KI-Vorschläge
-            </button>
-        </section>
 
-        <section id="s-ki" class="hidden">
-            <div class="card p-5 min-h-[450px] flex flex-col border border-slate-100">
-                <div id="out" class="flex-1 text-sm space-y-4 overflow-y-auto mb-4 p-1 text-slate-500 italic">✨ Frag mich was!</div>
-                <div id="loading" class="hidden flex items-center gap-2 text-emerald-500 text-xs mb-4"><div class="loader"></div> KI denkt nach...</div>
-                <div class="flex gap-2 bg-slate-100 p-2 rounded-2xl">
-                    <input type="text" id="chat-in" placeholder="Frage stellen..." class="flex-1 bg-transparent p-2 outline-none">
-                    <button onclick="send()" class="bg-[#10b981] text-white w-12 h-12 rounded-xl flex items-center justify-center"><i class="fas fa-paper-plane"></i></button>
+            <div id="shopping-container" class="space-y-2">
+                <!-- Items werden hier gerendert -->
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button onclick="askAI('Rezepte')" class="flex-1 bg-white border border-emerald-100 text-emerald-600 font-bold py-4 rounded-2xl shadow-sm flex items-center justify-center gap-2 active:bg-emerald-50 transition-colors">
+                    <i data-lucide="cooking-pot" class="w-5 h-5"></i> Koch-Ideen
+                </button>
+                <button onclick="shareList()" class="bg-white border border-gray-100 text-gray-400 p-4 rounded-2xl active:bg-gray-50">
+                    <i data-lucide="share-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- SEKTION: KI ASSISTENT -->
+        <div id="sec-ai" class="hidden animate-slide">
+            <div class="bg-white rounded-[32px] p-6 min-h-[500px] flex flex-col shadow-sm border border-gray-50">
+                <div id="ai-chat" class="flex-1 space-y-4 overflow-y-auto mb-6 text-sm">
+                    <div class="bg-emerald-50 p-4 rounded-2xl rounded-tl-none text-emerald-800">
+                        ✨ Hallo! Ich bin dein KI-Experte. Ich kenne deine Liste und deine Vorlieben. Wie kann ich helfen?
+                    </div>
+                </div>
+                <div id="ai-loader" class="hidden flex items-center gap-3 text-emerald-500 text-[10px] font-bold uppercase tracking-widest px-2 mb-4">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                    Gemini denkt nach...
+                </div>
+                <div class="flex gap-2 bg-gray-50 p-2 rounded-[24px]">
+                    <input type="text" id="ai-input" placeholder="Frag mich was..." class="flex-1 bg-transparent p-3 outline-none font-medium">
+                    <button onclick="sendChat()" class="bg-emerald-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-md"><i data-lucide="send" class="w-5 h-5"></i></button>
                 </div>
             </div>
-        </section>
+        </div >
 
-        <section id="s-set" class="hidden">
-            <div class="card p-8">
-                <h2 class="font-bold text-xl mb-4 text-slate-800">Setup</h2>
-                <input type="password" id="key-in" placeholder="AIza..." class="w-full p-4 bg-slate-50 rounded-xl border-none mb-4 outline-none text-sm">
-                <button onclick="save()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-xl">Speichern</button>
+        <!-- SEKTION: WORKSHOP SETUP -->
+        <div id="sec-setup" class="hidden animate-slide">
+            <div class="bg-white rounded-[32px] p-8 shadow-sm space-y-8">
+                <div>
+                    <h2 class="text-xl font-extrabold mb-1">Workshop Challenge</h2>
+                    <p class="text-gray-400 text-xs uppercase tracking-widest font-bold">Personalisiere deine App</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">App Name</label>
+                        <input type="text" id="set-name" class="w-full p-4 bg-gray-50 rounded-xl border-none outline-none mt-1 focus:bg-white focus:ring-1 focus:ring-emerald-200 transition-all font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Akzentfarbe (Hex)</label>
+                        <input type="text" id="set-color" placeholder="#10b981" class="w-full p-4 bg-gray-50 rounded-xl border-none outline-none mt-1">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Persönliche Vorlieben</label>
+                        <textarea id="set-prefs" placeholder="z.B. Vegetarisch, günstig, gesund..." class="w-full p-4 bg-gray-50 rounded-xl border-none outline-none mt-1 h-24 text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 leading-tight">API Key (AIza...)</label>
+                        <input type="password" id="set-key" class="w-full p-4 bg-gray-50 rounded-xl border-none outline-none mt-1 text-xs">
+                    </div>
+                </div>
+
+                <button onclick="applySettings()" class="w-full bg-gray-900 text-white py-5 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">Änderungen speichern</button>
             </div>
-        </section>
+        </div>
+
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around p-5">
-        <button onclick="nav('list')" class="n-btn active text-emerald-500 flex flex-col items-center gap-1"><i class="fas fa-list text-xl"></i><span class="text-[9px] font-bold">LISTE</span></button>
-        <button onclick="nav('ki')" class="n-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-robot text-xl"></i><span class="text-[9px] font-bold">KI</span></button>
-        <button onclick="nav('set')" class="n-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-key text-xl"></i><span class="text-[9px] font-bold">SETUP</span></button>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 w-full glass border-t border-gray-100 flex justify-around items-center pt-4 pb-8 z-50 safe-bottom">
+        <button onclick="nav('list')" class="tab-btn tab-active flex flex-col items-center gap-1">
+            <i data-lucide="shopping-cart"></i><span class="text-[9px] font-black uppercase">Einkauf</span>
+        </button>
+        <button onclick="nav('ai')" class="tab-btn text-gray-300 flex flex-col items-center gap-1">
+            <i data-lucide="sparkles"></i><span class="text-[9px] font-black uppercase">Assistent</span>
+        </button>
+        <button onclick="nav('setup')" class="tab-btn text-gray-300 flex flex-col items-center gap-1">
+            <i data-lucide="settings-2"></i><span class="text-[9px] font-black uppercase">Mein Design</span>
+        </button>
     </nav>
 
-    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
-        <div class="bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl overflow-y-auto max-h-[75vh]">
-            <div id="m-content" class="text-sm leading-relaxed text-slate-600"></div>
-            <button onclick="closeM()" class="w-full mt-8 py-4 bg-[#10b981] text-white rounded-2xl font-bold">Schließen</button>
+    <!-- Modal für Rezepte -->
+    <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-6 z-[60] backdrop-blur-md">
+        <div class="bg-white rounded-[40px] w-full max-w-md p-8 shadow-2xl max-h-[80vh] overflow-y-auto relative animate-slide">
+            <div id="modal-body"></div>
+            <button onclick="closeM()" class="w-full mt-8 py-5 bg-emerald-500 text-white rounded-2xl font-extrabold shadow-lg shadow-emerald-200">Schließen</button>
         </div>
     </div>
 
     <script>
-        let s = {
-            i: JSON.parse(localStorage.getItem('i')) || [{id:1, name:'Brot', c:false}],
-            k: localStorage.getItem('k') || ''
+        // INITIAL STATE
+        let state = {
+            name: localStorage.getItem('app_name') || 'Smart Einkauf',
+            color: localStorage.getItem('app_color') || '#10b981',
+            prefs: localStorage.getItem('app_prefs') || 'Ich ernähre mich gesund.',
+            key: localStorage.getItem('gemini_key') || '',
+            items: JSON.parse(localStorage.getItem('app_items')) || [
+                {id:1, n:'Milch', c: 'Milchprodukte', d: false},
+                {id:2, n:'Bio-Äpfel', c: 'Obst', d: false},
+                {id:3, n:'Vollkornbrot', c: 'Bäckerei', d: true}
+            ]
         };
 
+        // NAVIGATE
         function nav(id) {
-            document.querySelectorAll('section').forEach(x => x.classList.add('hidden'));
-            document.getElementById('s-' + id).classList.remove('hidden');
-            document.querySelectorAll('.n-btn').forEach(b => { b.classList.remove('text-emerald-500'); b.classList.add('text-slate-300'); });
-            event.currentTarget.classList.add('text-emerald-500');
-        }
-
-        function render() {
-            const l = document.getElementById('list');
-            l.innerHTML = '';
-            s.i.forEach(x => {
-                const d = document.createElement('div');
-                d.className = `card p-5 flex items-center justify-between ${x.c ? 'opacity-30' : ''}`;
-                d.innerHTML = `<div class="flex items-center gap-4" onclick="toggle(${x.id})"><div class="w-6 h-6 rounded-full border-2 border-[#10b981] flex items-center justify-center">${x.c ? '✓' : ''}</div><span class="${x.c ? 'line-through' : 'font-bold'}">${x.name}</span></div><button onclick="del(${x.id})" class="text-slate-200"><i class="fas fa-trash"></i></button>`;
-                l.appendChild(d);
+            document.querySelectorAll('main > div').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => { 
+                b.classList.remove('tab-active'); 
+                b.classList.add('text-gray-300'); 
             });
-            localStorage.setItem('i', JSON.stringify(s.i));
-            document.getElementById('status-dot').className = s.k ? 'w-3 h-3 rounded-full bg-emerald-400 shadow-lg' : 'w-3 h-3 rounded-full bg-rose-400';
+            event.currentTarget.classList.add('tab-active');
+            event.currentTarget.classList.remove('text-gray-300');
         }
 
-        function add() {
-            const v = document.getElementById('in').value;
-            if(!v) return;
-            s.i.unshift({id: Date.now(), name: v, c: false});
-            document.getElementById('in').value = '';
+        // RENDER LIST
+        function render() {
+            const container = document.getElementById('shopping-container');
+            container.innerHTML = '';
+            
+            state.items.sort((a,b) => a.d - b.d).forEach(item => {
+                const card = document.createElement('div');
+                card.className = `item-card glass p-5 rounded-2xl flex items-center justify-between animate-slide ${item.d ? 'opacity-40 shadow-none' : 'shadow-sm bg-white'}`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-4 flex-1" onclick="toggle(${item.id})">
+                        <div class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${item.d ? 'bg-emerald-500 border-emerald-500' : 'border-gray-200'}">
+                            ${item.d ? '<i data-lucide="check" class="text-white w-4 h-4"></i>' : ''}
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800 ${item.d ? 'line-through text-gray-400' : ''}">${item.n}</p>
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">${item.c}</p>
+                        </div>
+                    </div>
+                    <button onclick="del(${item.id})" class="text-gray-200 hover:text-red-400 transition-colors p-2"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+            localStorage.setItem('app_items', JSON.stringify(state.items));
+            updateStatus();
+        }
+
+        function addItem() {
+            const inp = document.getElementById('add-input');
+            if(!inp.value) return;
+            state.items.unshift({id: Date.now(), n: inp.value, c: 'Sonstiges', d: false});
+            inp.value = '';
             render();
         }
+        function toggle(id) { const i = state.items.find(x => x.id === id); i.d = !i.d; render(); }
+        function del(id) { state.items = state.items.filter(x => x.id !== id); render(); }
 
-        function toggle(id) { const x = s.i.find(a => a.id === id); x.c = !x.c; render(); }
-        function del(id) { s.i = s.i.filter(a => a.id !== id); render(); }
-        function save() { s.k = document.getElementById('key-in').value.trim(); localStorage.setItem('k', s.k); render(); alert("Key gespeichert!"); }
+        // SETTINGS
+        function applySettings() {
+            state.name = document.getElementById('set-name').value;
+            state.color = document.getElementById('set-color').value;
+            state.prefs = document.getElementById('set-prefs').value;
+            state.key = document.getElementById('set-key').value;
 
-        // DER UNIVERSAL-CONNECTOR
-        async function go(p) {
-            if(!s.k) return {e: "Bitte Key im Setup eingeben!"};
+            localStorage.setItem('app_name', state.name);
+            localStorage.setItem('app_color', state.color);
+            localStorage.setItem('app_prefs', state.prefs);
+            localStorage.setItem('gemini_key', state.key);
+
+            document.documentElement.style.setProperty('--p', state.color);
+            document.getElementById('ui-app-name').innerText = state.name;
+            alert("App erfolgreich personalisiert! ✨");
+            nav('list');
+        }
+
+        // KI LOGIK (GEMINI)
+        async function callGemini(prompt) {
+            if(!state.key) { alert("Bitte erst API Key im Setup eingeben!"); return null; }
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${state.key}`;
             
-            // Wir testen nacheinander verschiedene Kombinationen, die Google akzeptiert
-            const configs = [
-                { v: 'v1beta', m: 'gemini-1.5-flash' },
-                { v: 'v1', m: 'gemini-1.5-flash' },
-                { v: 'v1beta', m: 'gemini-pro' }
-            ];
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Du bist ein hilfreicher Assistent für die App "${state.name}". 
+                        User-Präferenzen: ${state.prefs}.
+                        Aktuelle Einkaufsliste: ${state.items.filter(x=>!x.d).map(x=>x.n).join(', ')}.
+                        Antworte kurz, modern (Emojis nutzen) und direkt. Aufgabe: ${prompt}` }] }]
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (e) { return "KI ist gerade nicht erreichbar. Hast du einen gültigen Key?"; }
+        }
 
-            for (let conf of configs) {
-                try {
-                    const r = await fetch(`https://generativelanguage.googleapis.com/${conf.v}/models/${conf.m}:generateContent?key=${s.k}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({contents: [{parts: [{text: `Liste: ${s.i.map(x=>x.name).join(',')}. Aufgabe: ${p}`}]}]})
-                    });
-                    const d = await r.json();
-                    if(r.ok && d.candidates) return {t: d.candidates[0].content.parts[0].text};
-                } catch (e) { console.log("Versuch fehlgeschlagen, probiere nächsten..."); }
+        async function sendChat() {
+            const inp = document.getElementById('ai-input');
+            const out = document.getElementById('ai-chat');
+            const loader = document.getElementById('ai-loader');
+            if(!inp.value) return;
+
+            const msg = inp.value;
+            out.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-500 text-white p-4 rounded-3xl rounded-tr-none max-w-[85%] font-medium shadow-sm">${msg}</div></div>`;
+            inp.value = '';
+            loader.classList.remove('hidden');
+            
+            const res = await callGemini(msg);
+            loader.classList.add('hidden');
+            out.innerHTML += `<div class="flex justify-start"><div class="bg-gray-100 text-gray-700 p-4 rounded-3xl rounded-tl-none max-w-[85%] font-medium shadow-sm">✨ ${res}</div></div>`;
+            out.scrollTop = out.scrollHeight;
+        }
+
+        async function askAI(topic) {
+            openM('<div class="flex flex-col items-center gap-4 py-8"><div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div><p class="font-bold text-gray-400">KI erstellt Vorschläge...</p></div>');
+            const res = await callGemini("Schlage 2 Rezepte vor, die ich mit diesen Sachen kochen kann.");
+            openM(`<h3 class="text-2xl font-black text-emerald-500 mb-4 italic">KI Rezept-Ideen</h3><div class="prose prose-sm text-gray-600 font-medium leading-relaxed">${res.replace(/\n/g, '<br>')}</div>`);
+        }
+
+        function shareList() {
+            const text = `Meine Einkaufsliste (${state.name}):\n` + state.items.filter(x=>!x.d).map(x=>`- ${x.n}`).join('\n');
+            if (navigator.share) {
+                navigator.share({ title: state.name, text: text });
+            } else {
+                alert("Liste kopiert:\n" + text);
             }
-            return {e: "Die KI ist blockiert. Bitte prüfe im Google Cloud Setup: Ist der Key auf 'KEINE EINSCHRÄNKUNGEN' gestellt?"};
         }
 
-        async function send() {
-            const i = document.getElementById('chat-in');
-            const o = document.getElementById('out');
-            if(!i.value) return;
-            const m = i.value;
-            o.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-500 text-white p-4 rounded-3xl rounded-tr-none max-w-[85%]">${m}</div></div>`;
-            i.value = '';
-            document.getElementById('loading').classList.remove('hidden');
-            const res = await go(m);
-            document.getElementById('loading').classList.add('hidden');
-            o.innerHTML += `<div class="flex justify-start"><div class="bg-white border p-4 rounded-3xl rounded-tl-none max-w-[85%] shadow-sm text-slate-700 font-medium">✨ ${res.e ? res.e : res.t}</div></div>`;
-            o.scrollTop = o.scrollHeight;
+        // UTILS
+        function updateStatus() {
+            const dot = document.getElementById('status-dot');
+            dot.className = state.key ? 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]';
         }
-
-        async function ask(p) {
-            openM('<div class="flex flex-col items-center p-6"><div class="loader mb-4"></div> KI plant...</div>');
-            const res = await go(p);
-            openM(`<h3 class="font-black text-2xl mb-5 text-emerald-500 italic">KI-Vorschlag</h3><div class="whitespace-pre-line text-slate-600">${res.e ? res.e : res.t}</div>`);
-        }
-
-        function openM(h) { document.getElementById('m-content').innerHTML = h; document.getElementById('modal').classList.replace('hidden', 'flex'); }
+        function openM(h) { document.getElementById('modal-body').innerHTML = h; document.getElementById('modal').classList.replace('hidden', 'flex'); }
         function closeM() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
 
-        document.addEventListener('DOMContentLoaded', () => { render(); if(s.k) document.getElementById('key-in').value = s.k; });
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+            document.getElementById('ui-app-name').innerText = state.name;
+            document.getElementById('set-name').value = state.name;
+            document.getElementById('set-color').value = state.color;
+            document.getElementById('set-prefs').value = state.prefs;
+            document.getElementById('set-key').value = state.key;
+            document.documentElement.style.setProperty('--p', state.color);
+        });
     </script>
 </body>
 </html>
