@@ -7,80 +7,78 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary-color: #22c55e; }
+        :root { --primary-color: #10b981; }
         .bg-primary { background-color: var(--primary-color); }
-        body { font-family: -apple-system, sans-serif; background-color: #f8fafc; padding-bottom: 90px; }
-        .card { background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: #f8fafc; padding-bottom: 100px; }
+        .card { background: white; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .hidden-section { display: none; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        .nav-item.active { color: var(--primary-color); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid var(--primary-color); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <header class="p-6 pb-2 flex justify-between items-center">
+    <header class="p-8 pb-4 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-black text-gray-800">Smart Einkauf</h1>
-            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-tighter">AI Workshop Edition</p>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Smart Einkauf</h1>
+            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Workshop Edition 2026</p>
         </div>
-        <div id="status-dot" class="w-3 h-3 rounded-full bg-red-400 shadow-sm"></div>
+        <div id="status-dot" class="w-3 h-3 rounded-full bg-red-400 shadow-lg"></div>
     </header>
 
-    <main class="px-4 mt-4">
+    <main class="px-5">
         <!-- LISTE -->
         <section id="section-einkauf">
             <div class="flex gap-2 mb-6">
-                <input type="text" id="item-input" placeholder="Was fehlt im Kühlschrank?" class="flex-1 p-4 rounded-2xl border-none shadow-sm outline-none bg-white">
-                <button onclick="addItem()" class="bg-primary text-white p-4 rounded-2xl shadow-md"><i class="fas fa-plus"></i></button>
+                <input type="text" id="item-input" placeholder="Was fehlt?" class="flex-1 p-4 rounded-2xl border-none shadow-sm outline-none bg-white text-slate-700">
+                <button onclick="addItem()" class="bg-primary text-white p-4 rounded-2xl shadow-lg active:scale-90 transition-all"><i class="fas fa-plus"></i></button>
             </div>
             <div id="shopping-list" class="space-y-3"></div>
-            <button onclick="askGemini('Schlage 2 schnelle Rezepte vor')" class="w-full mt-8 bg-white border-2 border-primary text-primary font-bold py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all">
-                <i class="fas fa-hat-chef"></i> KI-Rezeptideen
+            <button onclick="askGemini('Schlage 2 schnelle Rezepte vor')" class="w-full mt-10 bg-white border-2 border-primary text-primary font-bold py-4 rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+                <i class="fas fa-wand-magic-sparkles"></i> KI-Rezeptideen
             </button>
         </section>
 
-        <!-- KI CHAT -->
+        <!-- ASSISTENT -->
         <section id="section-ki" class="hidden-section">
-            <div class="card p-4 min-h-[450px] flex flex-col">
-                <div id="chat-output" class="flex-1 text-sm space-y-4 overflow-y-auto mb-4 p-2">
-                    <div class="bg-gray-100 p-4 rounded-2xl rounded-tl-none text-gray-600 italic">✨ Schreib mir eine Nachricht!</div>
+            <div class="card p-5 min-h-[450px] flex flex-col border border-slate-100">
+                <div id="chat-output" class="flex-1 text-sm space-y-4 overflow-y-auto mb-4 p-1">
+                    <div class="bg-slate-50 p-4 rounded-2xl rounded-tl-none text-slate-500 italic">✨ Frag mich nach Rezepten oder Tipps!</div>
                 </div>
                 <div id="ai-loading" class="hidden flex items-center gap-2 text-primary text-xs mb-4 px-2">
-                    <div class="loader"></div> Gemini denkt nach...
+                    <div class="loader"></div> Gemini analysiert...
                 </div>
-                <div class="flex gap-2 bg-gray-50 p-2 rounded-2xl">
-                    <input type="text" id="chat-input" placeholder="Frage stellen..." class="flex-1 bg-transparent p-2 outline-none">
-                    <button onclick="sendChat()" class="bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"><i class="fas fa-paper-plane"></i></button>
+                <div class="flex gap-2 bg-slate-100 p-2 rounded-2xl">
+                    <input type="text" id="chat-input" placeholder="Frage stellen..." class="flex-1 bg-transparent p-2 outline-none text-slate-700">
+                    <button onclick="sendChat()" class="bg-primary text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-md"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </section>
 
         <!-- SETUP -->
         <section id="section-settings" class="hidden-section">
-            <div class="card p-6">
-                <h2 class="font-bold text-lg mb-4">Einstellungen</h2>
-                <label class="text-[10px] font-bold text-gray-400 uppercase">Gemini API Key</label>
-                <input type="password" id="api-key-input" placeholder="AIza... oder AQ..." class="w-full p-4 bg-gray-50 rounded-xl border-none mt-1 mb-4 outline-none text-sm">
-                <button onclick="saveApiKey()" class="w-full bg-gray-800 text-white py-4 rounded-xl font-bold shadow-lg">Speichern</button>
-                <p id="save-status" class="hidden text-center text-green-500 text-xs mt-3 font-bold">✅ Key gespeichert!</p>
-                <div class="mt-6 p-4 bg-blue-50 rounded-xl text-[10px] text-blue-600 leading-relaxed">
-                    <strong>Tipp:</strong> Dein Key fängt mit <code>AQ...</code> an? Kein Problem, die App erkennt das automatisch.
-                </div>
+            <div class="card p-8">
+                <h2 class="font-bold text-xl mb-2 text-slate-800">Verbindung</h2>
+                <p class="text-[10px] text-slate-400 mb-6 uppercase font-bold tracking-tight">Kopiere deinen AQ-Key hier rein</p>
+                <input type="password" id="api-key-input" placeholder="AQ.Ab8RN..." class="w-full p-4 bg-slate-50 rounded-xl border-none mb-4 outline-none text-sm text-slate-600 focus:ring-2 focus:ring-primary/20">
+                <button onclick="saveApiKey()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-xl active:scale-95 transition-all">Speichern & Aktivieren</button>
+                <p id="save-status" class="hidden text-center text-emerald-500 text-xs mt-4 font-bold animate-pulse">✅ Verbindung hergestellt!</p>
             </div>
         </section>
     </main>
 
     <!-- Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t flex justify-around p-4">
-        <button onclick="showSection('einkauf')" class="nav-btn active text-primary flex flex-col items-center gap-1"><i class="fas fa-list-ul text-xl"></i><span class="text-[10px] font-bold">LISTE</span></button>
-        <button onclick="showSection('ki')" class="nav-btn text-gray-300 flex flex-col items-center gap-1"><i class="fas fa-comment-dots text-xl"></i><span class="text-[10px] font-bold">ASSISTENT</span></button>
-        <button onclick="showSection('settings')" class="nav-btn text-gray-300 flex flex-col items-center gap-1"><i class="fas fa-cog text-xl"></i><span class="text-[10px] font-bold">SETUP</span></button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 flex justify-around p-5">
+        <button onclick="showSection('einkauf')" class="nav-btn active text-primary flex flex-col items-center gap-1"><i class="fas fa-list-check text-xl"></i><span class="text-[9px] font-black uppercase">Liste</span></button>
+        <button onclick="showSection('ki')" class="nav-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-robot text-xl"></i><span class="text-[9px] font-black uppercase">Assistent</span></button>
+        <button onclick="showSection('settings')" class="nav-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-key text-xl"></i><span class="text-[9px] font-black uppercase">Setup</span></button>
     </nav>
 
-    <div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-6 z-50 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl overflow-y-auto max-h-[70vh]">
-            <div id="modal-content" class="text-sm leading-relaxed text-gray-700"></div>
-            <button onclick="closeModal()" class="w-full mt-6 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg">Schließen</button>
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
+        <div class="bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl overflow-y-auto max-h-[75vh]">
+            <div id="modal-content" class="text-sm leading-relaxed text-slate-600"></div>
+            <button onclick="closeModal()" class="w-full mt-8 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg">Verstanden</button>
         </div>
     </div>
 
@@ -93,9 +91,9 @@
         function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
             document.getElementById('section-' + id).classList.remove('hidden-section');
-            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('text-primary'); b.classList.add('text-gray-300'); });
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('text-primary'); b.classList.add('text-slate-300'); });
             event.currentTarget.classList.add('text-primary');
-            event.currentTarget.classList.remove('text-gray-300');
+            event.currentTarget.classList.remove('text-slate-300');
         }
 
         function renderItems() {
@@ -103,14 +101,14 @@
             list.innerHTML = '';
             state.items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = `card p-4 flex items-center justify-between ${item.checked ? 'opacity-40' : ''}`;
-                div.innerHTML = `<div class="flex items-center gap-3" onclick="toggleItem(${item.id})">
-                    <div class="w-6 h-6 rounded-lg border-2 border-primary flex items-center justify-center">
-                        ${item.checked ? '<i class="fas fa-check text-primary text-[10px]"></i>' : ''}
+                div.className = `card p-5 flex items-center justify-between transition-all ${item.checked ? 'opacity-30 scale-95' : ''}`;
+                div.innerHTML = `<div class="flex items-center gap-4" onclick="toggleItem(${item.id})">
+                    <div class="w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center">
+                        ${item.checked ? '<div class="w-3 h-3 bg-primary rounded-full"></div>' : ''}
                     </div>
-                    <span class="${item.checked ? 'line-through' : 'font-bold'} text-gray-700">${item.name}</span>
+                    <span class="${item.checked ? 'line-through text-slate-400' : 'font-bold text-slate-700'}">${item.name}</span>
                 </div>
-                <button onclick="deleteItem(${item.id})" class="text-gray-200"><i class="fas fa-times"></i></button>`;
+                <button onclick="deleteItem(${item.id})" class="text-slate-200"><i class="fas fa-trash-can"></i></button>`;
                 list.appendChild(div);
             });
             localStorage.setItem('items', JSON.stringify(state.items));
@@ -149,40 +147,43 @@
 
         function updateStatusDot() {
             const dot = document.getElementById('status-dot');
-            dot.className = state.apiKey ? 'w-3 h-3 rounded-full bg-green-400 shadow-sm' : 'w-3 h-3 rounded-full bg-red-400 shadow-sm';
+            dot.className = state.apiKey ? 'w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'w-3 h-3 rounded-full bg-rose-400';
         }
 
         async function callGemini(prompt) {
-            if(!state.apiKey) return { error: "Bitte Key im Setup eingeben!" };
+            if(!state.apiKey) return { error: "Kein Key gefunden. Bitte im Setup eingeben." };
             
-            const headers = { 'Content-Type': 'application/json' };
-            let url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+            // GOOGLE 2026 AUTH-METHODE (FÜR AQ-KEYS)
+            const headers = { 
+                'Content-Type': 'application/json'
+            };
 
-            // UNTERSCHEIDUNG DER KEY-TYPEN
-            if (state.apiKey.startsWith('AIza')) {
-                url += `?key=${state.apiKey}`;
-            } else {
-                // Die neuen AQ Keys müssen als Bearer Token gesendet werden
-                headers['Authorization'] = `Bearer ${state.apiKey}`;
-            }
+            // Der entscheidende Fix: Wir senden den AQ-Key als OAuth Bearer Token,
+            // weil Google AI Studio Keys ab Sept 2026 so behandelt werden.
+            headers['Authorization'] = `Bearer ${state.apiKey}`;
+            
+            // ZUSÄTZLICH senden wir ihn im x-goog-api-key Header für maximale Kompatibilität
+            headers['x-goog-api-key'] = state.apiKey;
+
+            // Wir nutzen die stabile v1 Schnittstelle
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent`;
 
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Einkaufsliste: ${state.items.map(i=>i.name).join(', ')}. Prompt: ${prompt}` }] }]
+                        contents: [{ parts: [{ text: `Du bist ein Einkaufs-Assistent. Liste: ${state.items.map(i=>i.name).join(', ')}. Aufgabe: ${prompt}` }] }]
                     })
                 });
                 
                 const data = await response.json();
                 if(!response.ok) {
-                    console.error("Google API Error:", data);
-                    return { error: data.error ? data.error.message : "Fehler bei der Anfrage." };
+                    return { error: `Google sagt: ${data.error ? data.error.message : 'Login fehlgeschlagen'}` };
                 }
                 return { text: data.candidates[0].content.parts[0].text };
             } catch (e) { 
-                return { error: "Netzwerkfehler. Bitte prüfe deine Verbindung." }; 
+                return { error: "Verbindung zu Google fehlgeschlagen." }; 
             }
         }
 
@@ -191,7 +192,7 @@
             const output = document.getElementById('chat-output');
             if(!input.value) return;
             const msg = input.value;
-            output.innerHTML += `<div class="flex justify-end"><div class="bg-primary text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-sm">${msg}</div></div>`;
+            output.innerHTML += `<div class="flex justify-end"><div class="bg-emerald-500 text-white p-4 rounded-3xl rounded-tr-none max-w-[85%] shadow-sm font-medium">${msg}</div></div>`;
             input.value = '';
             document.getElementById('ai-loading').classList.remove('hidden');
             
@@ -199,26 +200,23 @@
             document.getElementById('ai-loading').classList.add('hidden');
             
             if(res.error) {
-                output.innerHTML += `<div class="bg-red-50 text-red-500 p-3 rounded-xl text-[10px] border border-red-100">❌ ${res.error}</div>`;
+                output.innerHTML += `<div class="bg-rose-50 text-rose-500 p-4 rounded-2xl text-[10px] border border-rose-100 font-bold">❌ ${res.error}</div>`;
             } else {
-                output.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-gray-100 text-gray-700 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm">✨ ${res.text}</div></div>`;
+                output.innerHTML += `<div class="flex justify-start"><div class="bg-white border border-slate-100 text-slate-700 p-4 rounded-3xl rounded-tl-none max-w-[85%] shadow-sm">✨ ${res.text}</div></div>`;
             }
             output.scrollTop = output.scrollHeight;
         }
 
         async function askGemini(prompt) {
-            openModal('<div class="flex flex-col items-center p-4"><div class="loader mb-2"></div> <span class="font-bold text-gray-400">KI plant...</span></div>');
+            openModal('<div class="flex flex-col items-center p-6"><div class="loader mb-4"></div> <span class="font-bold text-slate-400">KI plant für dich...</span></div>');
             const res = await callGemini(prompt);
-            openModal(`<div class="p-2"><h3 class="font-black text-xl mb-4 text-primary italic">KI-Vorschläge</h3><div class="whitespace-pre-line text-gray-600">${res.error ? '❌ ' + res.error : res.text}</div></div>`);
+            openModal(`<div class="p-2"><h3 class="font-black text-2xl mb-5 text-emerald-500 tracking-tight">Deine KI-Ideen</h3><div class="whitespace-pre-line text-slate-600 leading-relaxed">${res.error ? '❌ ' + res.error : res.text}</div></div>`);
         }
 
+        function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
         function openModal(html) {
             document.getElementById('modal-content').innerHTML = html;
             document.getElementById('modal').classList.replace('hidden', 'flex');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.replace('flex', 'hidden');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
