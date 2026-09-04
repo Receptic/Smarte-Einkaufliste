@@ -2,171 +2,175 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer"> <!-- WICHTIG FÜR GOOGLE API -->
     <title>Smart Einkauf AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --p: #10b981; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fcfcfc; padding-bottom: 100px; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .card { background: white; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
         .hidden { display: none !important; }
-        .tab-active { color: var(--p); border-top: 3px solid var(--p); }
-        .item-row { animation: slideUp 0.3s ease-out forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-active { color: var(--p); transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
-    <header class="fixed top-0 w-full z-40 glass border-b border-gray-100 px-6 pt-12 pb-4 flex justify-between items-end">
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-40 glass border-b border-gray-100 px-6 pt-10 pb-4 flex justify-between items-end">
         <div>
-            <h1 id="ui-app-name" class="text-2xl font-extrabold text-slate-900 tracking-tight">Smart Einkauf</h1>
-            <p id="ui-status" class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">AI Power 2026</p>
+            <h1 id="app-name" class="text-2xl font-extrabold text-slate-900 tracking-tight">Smart Einkauf</h1>
+            <p id="app-status" class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">KI Aktiv</p>
         </div>
-        <div id="dot" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg transition-colors"></div>
+        <button onclick="shareLink()" class="p-3 bg-slate-100 rounded-full text-slate-500 active:scale-90 transition-all">
+            <i data-lucide="share-2" class="w-5 h-5"></i>
+        </button>
     </header>
 
-    <main class="pt-32 px-5 max-w-lg mx-auto">
+    <main class="pt-28 px-5 max-w-lg mx-auto">
         
         <!-- SEITE 1: LISTE -->
         <section id="p-list" class="space-y-4">
-            <div class="bg-white p-2 rounded-[28px] shadow-sm border border-gray-100 flex gap-2">
-                <input type="text" id="in-q" placeholder="Menge" class="w-20 p-4 bg-gray-50 rounded-2xl outline-none text-sm font-bold text-emerald-600">
-                <input type="text" id="in-n" placeholder="Was fehlt?" class="flex-1 p-4 bg-transparent outline-none text-sm font-medium">
-                <button onclick="add('list')" class="bg-emerald-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all"><i data-lucide="plus"></i></button>
+            <div class="card p-3 flex gap-2">
+                <input type="text" id="in-q" placeholder="Menge" class="w-20 p-3 bg-slate-50 rounded-xl outline-none text-sm font-bold text-emerald-600">
+                <input type="text" id="in-n" placeholder="Was fehlt?" class="flex-1 p-3 bg-transparent outline-none text-sm font-medium">
+                <button onclick="addItem('list')" class="bg-emerald-500 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-all"><i data-lucide="plus"></i></button>
             </div>
             <div id="cont-list" class="space-y-2"></div>
         </section>
 
-        <!-- SEITE 2: VORRAT -->
+        <!-- SEITE 2: KÜHLSCHRANK -->
         <section id="p-fridge" class="hidden space-y-4">
             <div class="bg-slate-900 text-white p-6 rounded-[32px] shadow-xl relative overflow-hidden">
-                <h2 class="text-lg font-bold mb-1">Mein Kühlschrank</h2>
-                <div class="mt-4 flex gap-2">
-                    <label class="flex-1 bg-white/10 p-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-white/20">
-                        <i data-lucide="camera" class="w-4 h-4"></i> <span class="text-xs font-bold">Foto scannen</span>
-                        <input type="file" accept="image/*" class="hidden" onchange="scan(this)">
-                    </label>
-                </div>
-            </div>
-            <div class="bg-white p-2 rounded-[28px] shadow-sm border border-gray-100 flex gap-2">
-                <input type="text" id="in-fq" placeholder="Anzahl" class="w-20 p-4 bg-gray-50 rounded-2xl outline-none text-sm font-bold text-slate-500">
-                <input type="text" id="in-fn" placeholder="Was ist noch da?" class="flex-1 p-4 bg-transparent outline-none text-sm font-medium">
-                <button onclick="add('fridge')" class="bg-slate-800 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all"><i data-lucide="plus"></i></button>
+                <h2 class="text-lg font-bold">Mein Kühlschrank</h2>
+                <p class="text-slate-400 text-[10px] mb-4 uppercase">Das ist noch zu Hause</p>
+                <label class="w-full bg-white/10 p-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:bg-white/20 transition-all border border-white/10">
+                    <i data-lucide="camera" class="w-5 h-5 text-emerald-400"></i> <span class="text-xs font-bold uppercase tracking-widest">Foto scannen</span>
+                    <input type="file" accept="image/*" class="hidden" onchange="scanFridge(this)">
+                </label>
             </div>
             <div id="cont-fridge" class="space-y-2 opacity-80"></div>
         </section>
 
         <!-- SEITE 3: KI CHEF -->
         <section id="p-ai" class="hidden space-y-4 text-center">
-            <button id="ai-btn" onclick="askChef()" class="w-full bg-emerald-500 text-white font-extrabold py-5 rounded-2xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
-                <i data-lucide="sparkles"></i> Was kann ich kochen?
+            <button onclick="askChef()" class="w-full bg-white border-2 border-emerald-500 text-emerald-600 font-black py-6 rounded-[32px] shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-all">
+                <i data-lucide="sparkles"></i> WAS KANN ICH KOCHEN?
             </button>
-            <div id="ai-out" class="mt-6 text-sm text-slate-600 text-left leading-relaxed min-h-[100px] bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
-                Klicke auf den Button oben! ✨
+            <div id="ai-out" class="card p-6 text-sm text-slate-600 text-left leading-relaxed min-h-[150px]">
+                Klicke oben, um Rezepte basierend auf deinem Vorrat zu erhalten. ✨
             </div>
         </section>
 
         <!-- SEITE 4: SETUP -->
         <section id="p-set" class="hidden">
-            <div class="bg-white rounded-[32px] p-8 shadow-sm space-y-6">
-                <h2 class="font-bold text-lg">Konfiguration</h2>
-                <input type="password" id="cfg-k" placeholder="AIza..." class="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none text-xs">
-                <button onclick="save()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Speichern</button>
-                <p id="debug" class="text-[9px] text-rose-500 font-mono break-all"></p>
+            <div class="card p-8 space-y-6">
+                <h2 class="font-bold text-xl">Einstellungen</h2>
+                <input type="password" id="cfg-k" placeholder="Gemini API Key (AIza...)" class="w-full p-4 bg-gray-50 rounded-2xl border-none outline-none text-xs">
+                <button onclick="save()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">Speichern</button>
             </div>
         </section>
-
     </main>
 
-    <nav class="fixed bottom-0 w-full glass border-t border-gray-100 flex justify-around items-center pt-3 pb-8 z-50">
-        <button onclick="nav('list')" class="n-btn tab-active px-6 flex flex-col items-center gap-1"><i data-lucide="shopping-cart" class="w-5 h-5"></i><span class="text-[8px] font-bold uppercase">Liste</span></button>
-        <button onclick="nav('fridge')" class="n-btn px-6 flex flex-col items-center gap-1 text-gray-400"><i data-lucide="refrigerator" class="w-5 h-5"></i><span class="text-[8px] font-bold uppercase">Vorrat</span></button>
-        <button onclick="nav('ai')" class="n-btn px-6 flex flex-col items-center gap-1 text-gray-400"><i data-lucide="chef-hat" class="w-5 h-5"></i><span class="text-[8px] font-bold uppercase">KI Chef</span></button>
-        <button onclick="nav('set')" class="n-btn px-6 flex flex-col items-center gap-1 text-gray-400"><i data-lucide="settings" class="w-5 h-5"></i><span class="text-[8px] font-bold uppercase">Setup</span></button>
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 w-full glass border-t border-gray-100 flex justify-around items-center pt-3 pb-10 z-50">
+        <button onclick="nav('list')" class="n-btn active-tab flex flex-col items-center gap-1"><i data-lucide="shopping-cart"></i><span class="text-[8px] font-bold">EINKAUF</span></button>
+        <button onclick="nav('fridge')" class="n-btn text-slate-300 flex flex-col items-center gap-1"><i data-lucide="refrigerator"></i><span class="text-[8px] font-bold">VORRAT</span></button>
+        <button onclick="nav('ai')" class="n-btn text-slate-300 flex flex-col items-center gap-1"><i data-lucide="chef-hat"></i><span class="text-[8px] font-bold">KI CHEF</span></button>
+        <button onclick="nav('set')" class="n-btn text-slate-300 flex flex-col items-center gap-1"><i data-lucide="settings-2"></i><span class="text-[8px] font-bold">SETUP</span></button>
     </nav>
 
     <script>
         let state = {
-            k: localStorage.getItem('k_2026') || '',
-            list: JSON.parse(localStorage.getItem('l_2026')) || [{n:'Nudeln', q:'500g'}],
-            fridge: JSON.parse(localStorage.getItem('f_2026')) || [{n:'Eier', q:'4'}]
+            k: localStorage.getItem('sh_key') || '',
+            list: JSON.parse(localStorage.getItem('sh_list')) || [],
+            fridge: JSON.parse(localStorage.getItem('sh_fridge')) || []
         };
+
+        // ÜBERPRÜFEN OB DATEN IN DER URL SIND (FÜR DAS TEILEN)
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('data')) {
+            const decoded = JSON.parse(atob(urlParams.get('data')));
+            state.list = decoded.list;
+            state.fridge = decoded.fridge;
+        }
 
         function nav(id) {
             document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
             document.getElementById('p-' + id).classList.remove('hidden');
-            document.querySelectorAll('.n-btn').forEach(b => b.classList.remove('tab-active', 'text-emerald-500'));
-            event.currentTarget.classList.add('tab-active', 'text-emerald-500');
+            document.querySelectorAll('.n-btn').forEach(b => b.classList.remove('active-tab', 'text-emerald-500'));
+            event.currentTarget.classList.add('active-tab', 'text-emerald-500');
         }
 
         function render() {
-            const renderSec = (t, cId) => {
+            const draw = (t, cId) => {
                 const c = document.getElementById(cId);
                 c.innerHTML = '';
                 state[t].forEach((item, i) => {
                     const d = document.createElement('div');
-                    d.className = "item-row bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-50";
-                    d.innerHTML = `<div><span class="text-emerald-600 text-xs font-bold mr-2">${item.q}</span><span class="font-bold text-slate-700">${item.n}</span></div>
+                    d.className = "bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-gray-50";
+                    d.innerHTML = `<div><span class="text-emerald-500 font-bold mr-2 text-xs">${item.q}</span><span class="font-bold text-slate-700">${item.n}</span></div>
                                    <button onclick="del('${t}', ${i})" class="text-slate-200"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
                     c.appendChild(d);
                 });
             };
-            renderSec('list', 'cont-list');
-            renderSec('fridge', 'cont-fridge');
-            localStorage.setItem('l_2026', JSON.stringify(state.list));
-            localStorage.setItem('f_2026', JSON.stringify(state.fridge));
-            document.getElementById('dot').className = state.k ? 'w-3 h-3 rounded-full bg-emerald-400 shadow-lg' : 'w-3 h-3 rounded-full bg-rose-400 shadow-lg';
+            draw('list', 'cont-list');
+            draw('fridge', 'cont-fridge');
+            localStorage.setItem('sh_list', JSON.stringify(state.list));
+            localStorage.setItem('sh_fridge', JSON.stringify(state.fridge));
             lucide.createIcons();
         }
 
-        function add(t) {
-            const n = document.getElementById(t === 'list' ? 'in-n' : 'in-fn').value;
-            const q = document.getElementById(t === 'list' ? 'in-q' : 'in-fq').value || '1';
+        function addItem(t) {
+            const n = document.getElementById(t === 'list' ? 'in-n' : 'in-fn')?.value;
+            const q = document.getElementById(t === 'list' ? 'in-q' : 'in-fq')?.value || '1';
             if(!n) return;
             state[t].unshift({n, q});
-            document.getElementById(t === 'list' ? 'in-n' : 'in-fn').value = '';
-            document.getElementById(t === 'list' ? 'in-q' : 'in-fq').value = '';
+            if(t === 'list') { document.getElementById('in-n').value = ''; document.getElementById('in-q').value = ''; }
             render();
         }
 
         function del(t, i) { state[t].splice(i, 1); render(); }
-        function save() { state.k = document.getElementById('cfg-k').value.trim(); localStorage.setItem('k_2026', state.k); render(); alert("Gespeichert!"); }
+        function save() { state.k = document.getElementById('cfg-k').value.trim(); localStorage.setItem('sh_key', state.k); alert("Gespeichert!"); }
 
-        // DER FIX: Probiert v1 UND v1beta automatisch aus
-        async function callAI(p, img = null) {
-            if(!state.k) return "Fehler: Kein API-Key.";
-            const endpoints = [
-                { v: 'v1beta', m: 'gemini-1.5-flash' },
-                { v: 'v1', m: 'gemini-1.5-flash' }
-            ];
-            let lastErr = "";
-            for (let conf of endpoints) {
+        function shareLink() {
+            const data = btoa(JSON.stringify({list: state.list, fridge: state.fridge}));
+            const url = window.location.origin + window.location.pathname + '?data=' + data;
+            navigator.clipboard.writeText(url);
+            alert("Teilbarer Link in Zwischenablage kopiert! Schicke ihn per WhatsApp an jemanden.");
+        }
+
+        async function callAI(prompt, img = null) {
+            if(!state.k) return "Kein Key!";
+            // PROBIERT BEIDE VERSIONEN (v1beta und v1)
+            const versions = ['v1beta', 'v1'];
+            for(let v of versions) {
                 try {
-                    const url = `https://generativelanguage.googleapis.com/${conf.v}/models/${conf.m}:generateContent?key=${state.k}`;
-                    let parts = [{ text: p }];
-                    if(img) parts.push({ inline_data: { mime_type: "image/jpeg", data: img } });
-                    const r = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({contents: [{parts}]}) });
+                    const r = await fetch(`https://generativelanguage.googleapis.com/${v}/models/gemini-1.5-flash:generateContent?key=${state.k}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, ...(img ? [{ inline_data: { mime_type: "image/jpeg", data: img } }] : [])] }] })
+                    });
                     const d = await r.json();
                     if(r.ok) return d.candidates[0].content.parts[0].text;
-                    lastErr = d.error.message;
-                } catch(e) { lastErr = "Netzwerkfehler"; }
+                } catch(e) {}
             }
-            return "KI-Fehler: " + lastErr;
+            return "Fehler: Die KI konnte nicht erreicht werden. Prüfe deinen Key!";
         }
 
         async function askChef() {
             const out = document.getElementById('ai-out');
-            out.innerHTML = "Chef Gemini überlegt...";
-            const prompt = `Kühlschrank: ${state.fridge.map(i=>i.q+' '+i.n).join(',')}. Liste: ${state.list.map(i=>i.q+' '+i.n).join(',')}. Schlage 2 Rezepte vor. Antworte kurz mit Emojis.`;
-            const res = await callAI(prompt);
+            out.innerHTML = "KI Chef überlegt...";
+            const res = await callAI(`Kühlschrank: ${state.fridge.map(i=>i.q+' '+i.n).join(',')}. Liste: ${state.list.map(i=>i.q+' '+i.n).join(',')}. Schlage 2 Rezepte vor. Antworte kurz mit Emojis.`);
             out.innerHTML = res.replace(/\n/g, '<br>');
         }
 
-        async function scan(input) {
+        async function scanFridge(input) {
             const file = input.files[0]; if(!file) return;
-            document.getElementById('ui-status').innerText = "Scanne...";
+            document.getElementById('app-status').innerText = "Scanne...";
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64 = e.target.result.split(',')[1];
@@ -176,7 +180,7 @@
                     const q = p.length > 1 ? p.shift() : '1';
                     state.fridge.unshift({n: p.join(' '), q});
                 });
-                document.getElementById('ui-status').innerText = "Fertig!"; render();
+                document.getElementById('app-status').innerText = "Fertig!"; render();
             };
             reader.readAsDataURL(file);
         }
